@@ -2,8 +2,7 @@ package com.yonekey;
 
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,9 +14,13 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -28,7 +31,7 @@ import pl.droidsonroids.gif.GifImageView;
 public class SplashScreen extends AppCompatActivity {
 
     private static SplashScreen instance;
-    private GifImageView splashImage;
+    private ImageView splashImage;
 
     public static SplashScreen getInstance() {
         return instance;
@@ -38,6 +41,15 @@ public class SplashScreen extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // CRITICAL: Set fullscreen BEFORE calling super.onCreate() or setContentView()
+        setupFullscreen();
+        FirebaseMessaging.getInstance().getToken()
+                .addOnSuccessListener(token -> {
+                    Log.d("TOKEN", token);
+                });
+
+
         String userAgent = WebSettings.getDefaultUserAgent(this);
         // Phone orientation setting for Android 8 (Oreo)
         if (userAgent.contains("Mobile") && android.os.Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
@@ -67,30 +79,16 @@ public class SplashScreen extends AppCompatActivity {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
         }
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
 
-            requestWindowFeature(Window.FEATURE_NO_TITLE);
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-            getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-            Bitmap bitmap = Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888);
-            bitmap.eraseColor(getResources().getColor(R.color.colorWhite));
-            BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-            getWindow().setBackgroundDrawable(bitmapDrawable);
-        }
         setContentView(R.layout.splash_screen);
         instance = this;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (Config.blackStatusBarText) {
-                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-            }
-        }
+
         if (Config.PREVENT_SLEEP) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+
         splashImage = findViewById(R.id.splash);
 
         try {
@@ -137,8 +135,6 @@ public class SplashScreen extends AppCompatActivity {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().hide();
             }
-            getWindow().setNavigationBarColor(getResources().getColor(R.color.colorWhite));
-            getWindow().setStatusBarColor(getResources().getColor(R.color.colorWhite));
 
         } else {
             splashImage.setVisibility(View.GONE);
@@ -149,6 +145,52 @@ public class SplashScreen extends AppCompatActivity {
         }
     }
 
+    private void setupFullscreen() {
+        // Request window features before setContentView
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        Window window = getWindow();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11 and above - use WindowInsetsController
+            window.setDecorFitsSystemWindows(false);
+            WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(window, window.getDecorView());
+            insetsController.hide(WindowInsetsCompat.Type.statusBars() | WindowInsetsCompat.Type.navigationBars());
+            insetsController.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // Android 9 and 10
+            window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            window.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            window.getDecorView().setSystemUiVisibility(flags);
+        } else {
+            // Android 8 and below
+            window.setFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+            );
+
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            window.getDecorView().setSystemUiVisibility(flags);
+        }
+
+        // Make status and navigation bars transparent
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.setStatusBarColor(Color.TRANSPARENT);
+            window.setNavigationBarColor(Color.TRANSPARENT);
+        }
+    }
 
     private void subScribePushChannel() {
         try {
@@ -193,5 +235,41 @@ public class SplashScreen extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        // Reapply fullscreen when activity resumes
+        Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(window, window.getDecorView());
+            insetsController.hide(WindowInsetsCompat.Type.statusBars() | WindowInsetsCompat.Type.navigationBars());
+        } else {
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            window.getDecorView().setSystemUiVisibility(flags);
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            // Reapply fullscreen when window gains focus
+            Window window = getWindow();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(window, window.getDecorView());
+                insetsController.hide(WindowInsetsCompat.Type.statusBars() | WindowInsetsCompat.Type.navigationBars());
+            } else {
+                int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+                window.getDecorView().setSystemUiVisibility(flags);
+            }
+        }
     }
 }

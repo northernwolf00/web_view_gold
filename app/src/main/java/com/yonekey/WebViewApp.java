@@ -37,14 +37,27 @@ public class WebViewApp extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        context = this;
+
 
         setupActivityListener();
-        initFirebase();
+        try {
+            FirebaseApp.initializeApp(this);
+            Log.d("FCM_INIT", "Firebase manually initialized");
+        } catch (Exception e) {
+            Log.e("FCM_INIT", "Firebase init failed: " + e.getMessage());
+        }
+
+        context = this;
         initOneSignal();
         initAdsSDK();
         initPushWooshSDK();
         initRevenueCat();
+        try {
+            FirebaseApp.initializeApp(this);
+            Log.d("FCM_INIT", "Firebase manually initialized");
+        } catch (Exception e) {
+            Log.e("FCM_INIT", "Firebase init failed: " + e.getMessage());
+        }
     }
 
     private void initRevenueCat() {

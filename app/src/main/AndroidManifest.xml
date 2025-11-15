@@ -64,10 +64,10 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_path" />
         </provider> <!-- disable firebase provider to get rid of "Default FirebaseApp is not initialized in this process" exceptions -->
-        <provider
-            android:name="com.google.firebase.provider.FirebaseInitProvider"
-            android:authorities="${applicationId}.firebaseinitprovider"
-            tools:node="remove" />
+<!--        <provider-->
+<!--            android:name="com.google.firebase.provider.FirebaseInitProvider"-->
+<!--            android:authorities="${applicationId}.firebaseinitprovider"-->
+<!--            tools:node="remove" />-->
 
         <activity
             android:name=".nfc.MyNfcActivity"

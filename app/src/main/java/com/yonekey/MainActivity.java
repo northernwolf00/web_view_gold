@@ -488,6 +488,21 @@ public class MainActivity extends AppCompatActivity
             fetchFCMToken();
         }
 
+
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w("FCM_TOKEN", "Fetching FCM token failed", task.getException());
+                        return;
+                    }
+
+                    String token = task.getResult();
+                    Log.d("FCM_TOKEN", "Manual Token Fetch: " + token);
+                });
+
+
+
         toggleHelperFrame(false, null, null);
 
         RelativeLayout main = findViewById(R.id.main);
@@ -1383,6 +1398,7 @@ public class MainActivity extends AppCompatActivity
                                 return;
                             }
                             String token = task.getResult();
+                            Log.d("FCM_TOKEN", "FCM Token: " + token);
                             firebaseUserToken = token;
                             AlertManager.updateFirebaseToken(MainActivity.this, token);
                             if (BuildConfig.IS_DEBUG_MODE) Log.d(TAG, "FCM Token = " + token);

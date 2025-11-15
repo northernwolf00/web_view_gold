@@ -11,7 +11,7 @@ public class Config {
     // 1. Buy a WebViewGold license (https://www.webviewgold.com/download/android) for each app you publish. If your app is going to be free, a "Regular license" is required. If your app will be sold to your users or if you use the In-App Purchases API, an "Extended license" is required. More info: https://codecanyon.net/licenses/standard?ref=onlineappcreator
     // 2. Grab your Purchase Code (this is how to find it quickly: https://help.market.envato.com/hc/en-us/articles/202822600-Where-Is-My-Purchase-Code-)
     // 3. Great! Just enter it here and restart your app:
-    public static final String PURCHASECODE = "xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx";
+    public static final String PURCHASECODE = "";
 
     // 4. Optional: Enter your email address to receive status updates and news to (opt-in confirmation required; will also be stored within app; Terms and Conditions apply; keep empty or with "app_admin@example.org" to not use this service):
     public static final String APP_ADMIN_EMAIL = "app_admin@example.org";
@@ -119,7 +119,7 @@ public class Config {
     public static final boolean REMAIN_SPLASH_OPTION = false;
 
     //Set the splash screen image size with respect to the device's smallest width/height; range in percentage [0-100]; Caution: value  = 0 will hide the image completely
-    public static final double SCALE_SPLASH_IMAGE = 25;
+    public static final double SCALE_SPLASH_IMAGE = 100;
 
     //Set to "true" for black status bar text; Set to "false" for white status bar text; Use 'colorPrimaryDark' in style.xml to choose the status bar background color
     static boolean blackStatusBarText = false;
@@ -234,7 +234,7 @@ public class Config {
      * Firebase Push Notification Options
      */
     //Set to "true" to activate Firebase Push (download the google-services.json file and replace the existing one via Mac Finder/Windows Explorer)
-    public static final boolean FIREBASE_PUSH_ENABLED = false;
+    public static final boolean FIREBASE_PUSH_ENABLED = true;
 
     public static final String firebasechanneltopic = "NONE"; //Topic name of Firebase channel
 
